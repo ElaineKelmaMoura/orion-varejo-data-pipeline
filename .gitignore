@@ -1,0 +1,19 @@
+# Credenciais e variáveis de ambiente
+.env
+
+# Arquivos Python temporários
+__pycache__/
+*.pyc
+
+# Arquivos do VS Code
+.vscode/
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Dados gerados pelo pipeline
+data/
+
+# Dependências externas
+jars/

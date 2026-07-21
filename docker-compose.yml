@@ -1,0 +1,10 @@
+services:
+  spark:
+    image: apache/spark:3.5.1
+    container_name: orion-spark
+    volumes:
+      - ./scripts:/opt/spark/work-dir/scripts
+      - ./data:/opt/spark/work-dir/data
+      - ./jars:/opt/spark/work-dir/jars
+    working_dir: /opt/spark/work-dir
+    command: tail -f /dev/null
