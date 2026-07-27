@@ -2,9 +2,20 @@ services:
   spark:
     image: apache/spark:3.5.1
     container_name: orion-spark
+
     volumes:
       - ./scripts:/opt/spark/work-dir/scripts
       - ./data:/opt/spark/work-dir/data
       - ./jars:/opt/spark/work-dir/jars
+
+    env_file:
+      - .env
+
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+
     working_dir: /opt/spark/work-dir
+
     command: tail -f /dev/null
