@@ -74,30 +74,80 @@ spark = (
 
 spark.sparkContext.setLogLevel("WARN")
 
+# Tabelas que serão processadas na camada Silver.
+tabelas = [
+    "Clientes",
+    "Categorias",
+    "Produtos",
+    "Pedidos",
+    "Itens_Pedido"
+]
 
 
 # FUNÇÕES DE TRANSFORMAÇÃO
 
+def ler_tabela_bronze(nome_tabela):
+    """
+    Lê uma tabela em formato Parquet na camada Bronze do S3.
+    """
 
-def transformar_clientes():
     caminho_bronze = (
-        "s3a://orion-varejo-data-lake-ek/bronze/clientes"
+        f"s3a://orion-varejo-data-lake-ek/"
+        f"bronze/{nome_tabela.lower()}"
     )
+
+    print(
+        f"\nLendo a tabela {nome_tabela} "
+        f"da camada Bronze."
+    )
+
+    dataframe = spark.read.parquet(caminho_bronze)
+
+    quantidade = dataframe.count()
+
+    print(
+        f"Registros encontrados em {nome_tabela}: "
+        f"{quantidade}"
+    )
+
+    return dataframe
+
+
+def gravar_tabela_silver(dataframe, nome_tabela):
+    """
+    Grava uma tabela tratada em formato Parquet
+    na camada Silver do S3.
+    """
 
     caminho_silver = (
-        "s3a://orion-varejo-data-lake-ek/silver/clientes"
+        f"s3a://orion-varejo-data-lake-ek/"
+        f"silver/{nome_tabela.lower()}"
     )
+
+    (
+        dataframe.write
+        .mode("overwrite")
+        .parquet(caminho_silver)
+    )
+
+    print(
+        f"Tabela {nome_tabela} gravada com sucesso em "
+        f"{caminho_silver}"
+    )
+
+
+
+
+
+def transformar_clientes():
+    """
+    Aplica regras de qualidade e padronização
+    à tabela Clientes.
+    """
 
     print("\nIniciando transformação da tabela Clientes.")
 
-    df_clientes = spark.read.parquet(caminho_bronze)
-
-    quantidade_bronze = df_clientes.count()
-
-    print(
-        f"Registros encontrados na Bronze: "
-        f"{quantidade_bronze}"
-    )
+    df_clientes = ler_tabela_bronze("Clientes")
 
     df_clientes_silver = (
         df_clientes
@@ -109,21 +159,14 @@ def transformar_clientes():
     quantidade_silver = df_clientes_silver.count()
 
     print(
-        f"Registros após tratamento: "
+        f"Registros após tratamento em Clientes: "
         f"{quantidade_silver}"
     )
 
-    (
-        df_clientes_silver.write
-        .mode("overwrite")
-        .parquet(caminho_silver)
+    gravar_tabela_silver(
+        df_clientes_silver,
+        "Clientes"
     )
-
-    print(
-        "Tabela Clientes gravada com sucesso em "
-        f"{caminho_silver}"
-    )
-
 
 
 # EXECUÇÃO PRINCIPAL
@@ -138,10 +181,8 @@ try:
 
 except Exception as erro:
     print(
-        "\nErro durante a transformação "
-        f"da camada Silver: {erro}"
+        f"\nErro durante a transformação da camada Silver: {erro}"
     )
-
     raise
 
 finally:
